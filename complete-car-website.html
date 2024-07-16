@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אתר רכבים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #summary, #carOffers {
+            display: none;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        #logout {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .page {
+            display: none;
+        }
+        #loginPage {
+            display: block;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .car-offer {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .car-offer h3 {
+            margin-top: 0;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav id="navigation" style="display: none;">
+            <button onclick="showPage('homePage')">דף הבית</button>
+            <button onclick="showPage('todoPage')">בדיקות לפני רכישה</button>
+            <button onclick="showPage('carOffersPage')">הצעות רכבים</button>
+            <button id="logout" onclick="logout()">התנתקות</button>
+        </nav>
+
+        <div id="loginPage" class="page">
+            <h1>התחברות</h1>
+            <form id="loginForm">
+                <input type="tel" id="phone" placeholder="מספר טלפון" pattern="05[0-9]{8}" required>
+                <button type="submit">התחברות</button>
+            </form>
+            <div id="loginLoader" style="display: none;">
+                <p>ברוך הבא שחק</p>
+            </div>
+        </div>
+
+        <div id="homePage" class="page">
+            <h1>הערכה ראשונית לרכישת רכב</h1>
+            <form id="carForm">
+                <label for="carName">שם רכב:</label>
+                <input type="text" id="carName" required>
+                
+                <label for="carYear">שנתון הרכב:</label>
+                <input type="number" id="carYear" required>
+                
+                <label for="km">ק"מ:</label>
+                <input type="number" id="km" required>
+                
+                <label for="hand">יד:</label>
+                <input type="number" id="hand" required>
+                
+                <label for="price">מחיר:</label>
+                <input type="number" id="price" required>
+                
+                <label for="insurance">הצעת ביטוח:</label>
+                <input type="number" id="insurance" required>
+                
+                <label for="capital">הון עצמי:</label>
+                <input type="number" id="capital" required>
+                
+                <h2>חישוב צריכת דלק</h2>
+                
+                <label for="fuelPrice">מחיר לליטר:</label>
+                <input type="number" id="fuelPrice" step="0.01" required>
+                
+                <label for="fuelConsumption">צריכת דלק:</label>
+                <input type="number" id="fuelConsumption" step="0.1" required>
+                
+                <h2>הלוואה</h2>
+                <p>סכום: 45000 ₪</p>
+                <p>ריבית נומינלית: 6.9% (P+0.9)</p>
+                <p>שנים: 5</p>
+                <p>החזר חודשי: 888 ₪</p>
+                
+                <button type="submit">לחץ לסיכום</button>
+            </form>
+            
+            <div id="summary"></div>
+        </div>
+
+        <div id="todoPage" class="page">
+            <h1>בדיקות לפני רכישת רכב</h1>
+            <ul id="todoList">
+                <li><label><input type="checkbox"> צמיגים</label></li>
+                <li><label><input type="checkbox"> שלדה</label></li>
+                <li><label><input type="checkbox"> האם יש שעבוד על הרכב</label></li>
+                <li><label><input type="checkbox"> היסטוריית טיפולים האם קיימת</label></li>
+                <li><label><input type="checkbox"> מתי טסט</label></li>
+                <li><label><input type="checkbox"> מתי עבר פעם אחרונה טיפול</label></li>
+                <li><label><input type="checkbox"> מיזוג אוויר</label></li>
+                <li><label><input type="checkbox"> נסיעת מבחן</label></li>
+            </ul>
+        </div>
+
+        <div id="carOffersPage" class="page">
+            <h1>הצעות רכבים</h1>
+            <div id="carOffers"></div>
+        </div>
+    </div>
+
+    <script>
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            if (phone === '0544883935') {
+                document.getElementById('loginLoader').style.display = 'block';
+                setTimeout(function() {
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('navigation').style.display = 'block';
+                    showPage('homePage');
+                }, 2000);
+            } else {
+                alert('מספר טלפון לא נכון');
+            }
+        });
+
+        // Car form submission
+        document.getElementById('carForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const carName = document.getElementById('carName').value;
+            const carYear = parseInt(document.getElementById('carYear').value);
+            const km = parseInt(document.getElementById('km').value);
+            const hand = parseInt(document.getElementById('hand').value);
+            const price = parseInt(document.getElementById('price').value);
+            const insurance = parseInt(document.getElementById('insurance').value);
+            const capital = parseInt(document.getElementById('capital').value);
+            const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+            const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
+            
+            const kmPerYear = km / (new Date().getFullYear() - carYear);
+            const additionInExchange = price - 14000;
+            const monthlyFuelCost = ((15000 / fuelConsumption) * fuelPrice) / 12;
+            const monthlyInsurance = insurance / 12;
+            const totalMonthlyCost = 888 + monthlyFuelCost + monthlyInsurance;
+            
+            const summaryHTML = `
+                <h2>סיכום</h2>
+                <p>החזר חודשי: 888 ₪</p>
+                <p>עלות תדלוק חודשית: ${monthlyFuelCost.toFixed(2)} ₪</p>
+                <p>ביטוח לחודש: ${monthlyInsurance.toFixed(2)} ₪</p>
+                <p>עלות שוטפת: ${totalMonthlyCost.toFixed(2)} ₪</p>
+                <p>טרייד אין מיונדאי I10 2014 בשווי משוכלל של 24,369 לפי יצחק לוי ל-${carName} במחיר של ${price} ₪ והוספה של עוד ${additionInExchange} ₪</p>
+            `;
+            
+            document.getElementById('summary').innerHTML = summaryHTML;
+            document.getElementById('summary').style.display = 'block';
+            
+            // Save data for the "car offers" page
+            const carData = {
+                name: carName,
+                price: price,
+                hand: hand,
+                km: km,
+                insurance: insurance,
+                additionInExchange: additionInExchange,
+                monthlyCost: totalMonthlyCost
+            };
+            let carOffers = JSON.parse(localStorage.getItem('carOffers') || '[]');
+            carOffers.push(carData);
+            localStorage.setItem('carOffers', JSON.stringify(carOffers));
+            updateCarOffers();
+        });
+
+        // Update car offers display
+        function updateCarOffers() {
+            const carOffers = JSON.parse(localStorage.getItem('carOffers') || '[]');
+            const carOffersContainer = document.getElementById('carOffers');
+            carOffersContainer.innerHTML = '';
+            carOffers.forEach((car, index) => {
+                const carElement = document.createElement('div');
+                carElement.className = 'car-offer';
+                carElement.innerHTML = `
+                    <h3>${car.name}</h3>
+                    <p>מחיר: ${car.price} ₪</p>
+                    <p>יד: ${car.hand}</p>
+                    <p>ק"מ: ${car.km}</p>
+                    <p>הצעת ביטוח: ${car.insurance} ₪</p>
+                    <p>הוספה בהחלפה: ${car.additionInExchange} ₪</p>
+                    <p>עלות שוטפת: ${car.monthlyCost.toFixed(2)} ₪</p>
+                `;
+                carOffersContainer.appendChild(carElement);
+            });
+        }
+
+        // Navigation between pages
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+            if (pageId === 'carOffersPage') {
+                updateCarOffers();
+            }
+        }
+
+        // Logout functionality
+        function logout() {
+            const loader = document.createElement('div');
+            loader.innerHTML = '<p>עד הפעם הבאה</p>';
+            document.body.appendChild(loader);
+            setTimeout(function() {
+                document.getElementById('navigation').style.display = 'none';
+                showPage('loginPage');
+                document.body.removeChild(loader);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
