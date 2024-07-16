@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דף הבית - אתר רכבים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #summary {
+            display: none;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        #logout {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button id="logout">התנתקות</button>
+    <div class="container">
+        <h1>הערכה ראשונית לרכישת רכב</h1>
+        <form id="carForm">
+            <label for="carName">שם רכב:</label>
+            <input type="text" id="carName" required>
+            
+            <label for="carYear">שנתון הרכב:</label>
+            <input type="number" id="carYear" required>
+            
+            <label for="km">ק"מ:</label>
+            <input type="number" id="km" required>
+            
+            <label for="hand">יד:</label>
+            <input type="number" id="hand" required>
+            
+            <label for="price">מחיר:</label>
+            <input type="number" id="price" required>
+            
+            <label for="insurance">הצעת ביטוח:</label>
+            <input type="number" id="insurance" required>
+            
+            <label for="capital">הון עצמי:</label>
+            <input type="number" id="capital" required>
+            
+            <h2>חישוב צריכת דלק</h2>
+            
+            <label for="fuelPrice">מחיר לליטר:</label>
+            <input type="number" id="fuelPrice" step="0.01" required>
+            
+            <label for="fuelConsumption">צריכת דלק:</label>
+            <input type="number" id="fuelConsumption" step="0.1" required>
+            
+            <h2>הלוואה</h2>
+            <p>סכום: 45000 ₪</p>
+            <p>ריבית נומינלית: 6.9% (P+0.9)</p>
+            <p>שנים: 5</p>
+            <p>החזר חודשי: 888 ₪</p>
+            
+            <button type="submit">לחץ לסיכום</button>
+        </form>
+        
+        <div id="summary"></div>
+    </div>
+    
+    <script>
+        document.getElementById('carForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const carName = document.getElementById('carName').value;
+            const carYear = parseInt(document.getElementById('carYear').value);
+            const km = parseInt(document.getElementById('km').value);
+            const hand = parseInt(document.getElementById('hand').value);
+            const price = parseInt(document.getElementById('price').value);
+            const insurance = parseInt(document.getElementById('insurance').value);
+            const capital = parseInt(document.getElementById('capital').value);
+            const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+            const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
+            
+            const kmPerYear = km / (new Date().getFullYear() - carYear);
+            const additionInExchange = price - 14000;
+            const monthlyFuelCost = ((15000 / fuelConsumption) * fuelPrice) / 12;
+            const monthlyInsurance = insurance / 12;
+            const totalMonthlyCost = 888 + monthlyFuelCost + monthlyInsurance;
+            
+            const summaryHTML = `
+                <h2>סיכום</h2>
+                <p>החזר חודשי: 888 ₪</p>
+                <p>עלות תדלוק חודשית: ${monthlyFuelCost.toFixed(2)} ₪</p>
+                <p>ביטוח לחודש: ${monthlyInsurance.toFixed(2)} ₪</p>
+                <p>עלות שוטפת: ${totalMonthlyCost.toFixed(2)} ₪</p>
+                <p>טרייד אין מיונדאי I10 2014 בשווי משוכלל של 24,369 לפי יצחק לוי ל-${carName} במחיר של ${price} ₪ והוספה של עוד ${additionInExchange} ₪</p>
+            `;
+            
+            document.getElementById('summary').innerHTML = summaryHTML;
+            document.getElementById('summary').style.display = 'block';
+            
+            // Save data for the "car offers" page
+            const carData = {
+                name: carName,
+                price: price,
+                hand: hand,
+                km: km,
+                insurance: insurance,
+                additionInExchange: additionInExchange,
+                monthlyCost: totalMonthlyCost
+            };
+            let carOffers = JSON.parse(localStorage.getItem('carOffers') || '[]');
+            carOffers.push(carData);
+            localStorage.setItem('carOffers', JSON.stringify(carOffers));
+        });
+        
+        document.getElementById('logout').addEventListener('click', function() {
+            const loader = document.createElement('div');
+            loader.innerHTML = '<p>עד הפעם הבאה</p>';
+            document.body.appendChild(loader);
+            setTimeout(function() {
+                window.location.href = 'login.html';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
